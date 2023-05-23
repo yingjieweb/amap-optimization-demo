@@ -38,6 +38,7 @@
     "build:quickapp-webview-union": "uni build -p quickapp-webview-union"
   },
   "dependencies": {
+    "@amap/amap-jsapi-loader": "^1.0.1",
     "@dcloudio/uni-app": "3.0.0-3071120230427001",
     "@dcloudio/uni-app-plus": "3.0.0-3071120230427001",
     "@dcloudio/uni-components": "3.0.0-3071120230427001",
