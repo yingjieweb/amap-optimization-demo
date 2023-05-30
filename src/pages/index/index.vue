@@ -1,6 +1,40 @@
 <template>
   <div class="container">
     <div id="map"></div>
+
+    <van-dialog
+      title="Warning 🤕️"
+      v-model:show="dialogVisible"
+      confirmButtonText="OK"
+      cancelButtonText="Cancel"
+      show-cancel-button
+      @confirm="updateAmapKey"
+      overlay
+    >
+      <div style="padding: 10px 20px">
+        <div>
+          监测到您未填写高德地图开发者 key，请先到前往
+          <a href="https://lbs.amap.com/api/javascript-api-v2/prerequisites"
+            >高德开放平台</a
+          >
+          申请开发者 key 添写至下方输入框内，方可体验完整功能
+        </div>
+        <div style="margin-top: 10px">
+          It is detected that you have not filled in the developer key of Amap.
+          Please go to
+          <a href="https://lbs.amap.com/api/javascript-api-v2/prerequisites"
+            >Amap Open Platform</a
+          >
+          to apply for the developer key and add it to the input box below to
+          experience the full function
+        </div>
+      </div>
+      <van-field
+        v-model="curAmapKey"
+        label="Amap key"
+        placeholder="Input you developer key"
+      />
+    </van-dialog>
   </div>
 </template>
 
@@ -8,7 +42,7 @@
 import AMapLoader from "@amap/amap-jsapi-loader";
 import HouseListJson from "../../db/data.json";
 import { AMapDeveloperKey } from "@/config/index";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 // data
 let map = null; // 地图母版
@@ -20,7 +54,6 @@ let layer = null; // 气泡层
 let markers = null; // 气泡层圆点标记
 let labels = []; // 气泡层海量标注
 let selectedLabel = []; // 气泡层选中态到文本标注
-
 const priceIconMap = {
   low: "https://t1.focus-img.cn/applet/2022-04-25/a7830c321d0842dea1ce772f622fce02.png",
   normal:
@@ -34,14 +67,24 @@ const priceDotArr = [
   "https://t1.focus-img.cn/applet/2022-04-14/db7245505a904ceba96fb92efb9157a0.jpg", // active
 ];
 const priceClassArr = ["low", "normal", "high"];
+const amapKey = ref();
+const curAmapKey = ref();
+const dialogVisible = ref(false);
 const cityName = ref("深圳");
 const houseList = ref([]);
 const screenHouseList = ref([]);
 
+// watch
+watch(amapKey, (newValue) => {
+  if (!newValue) {
+    dialogVisible.value = true;
+  }
+});
+
 // methods
 const getCityLngLat = (cityId) => {
   AMapLoader.load({
-    key: AMapDeveloperKey, // 申请好的Web端开发者Key，首次调用 load 时必填
+    key: amapKey.value, // 申请好的Web端开发者Key，首次调用 load 时必填
     version: "2.0", // 指定要加载的 JSAPI 的版本，缺省时默认为 1.4.15
     plugins: ["AMap.Geocoder"], // 需要使用的的插件列表，如比例尺'AMap.Scale'、'AMap.CitySearch'等
   })
@@ -221,10 +264,23 @@ const setNormalMarkerSelected = (selectedId) => {
   });
   map.add(selectedLabel);
 };
+const updateAmapKey = () => {
+  if (curAmapKey.value) {
+    amapKey.value = curAmapKey.value;
+    getCityLngLat(197);
+  } else {
+    setTimeout(() => {
+      dialogVisible.value = true;
+    });
+  }
+};
 
 // created
+amapKey.value = AMapDeveloperKey;
 houseList.value = HouseListJson;
-getCityLngLat(197);
+if (amapKey.value) {
+  getCityLngLat(197);
+}
 </script>
 
 <style lang="scss" scoped>
