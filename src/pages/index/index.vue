@@ -2,39 +2,11 @@
   <div class="container">
     <div id="map"></div>
 
-    <van-dialog
-      title="Warning 🤕️"
-      v-model:show="dialogVisible"
-      confirmButtonText="OK"
-      cancelButtonText="Cancel"
-      show-cancel-button
-      @confirm="updateAmapKey"
-      overlay
-    >
-      <div style="padding: 10px 20px">
-        <div>
-          监测到您未填写高德地图开发者 key，请先到前往
-          <a href="https://lbs.amap.com/api/javascript-api-v2/prerequisites"
-            >高德开放平台</a
-          >
-          申请开发者 key 添写至下方输入框内，方可体验完整功能
-        </div>
-        <div style="margin-top: 10px">
-          It is detected that you have not filled in the developer key of Amap.
-          Please go to
-          <a href="https://lbs.amap.com/api/javascript-api-v2/prerequisites"
-            >Amap Open Platform</a
-          >
-          to apply for the developer key and add it to the input box below to
-          experience the full function
-        </div>
-      </div>
-      <van-field
-        v-model="curAmapKey"
-        label="Amap key"
-        placeholder="Input you developer key"
-      />
-    </van-dialog>
+    <div class="loading-wrapper" v-if="isLoading">
+      <van-loading size="38px" text-size="18px" vertical color="#0094ff"
+        >加载中...</van-loading
+      >
+    </div>
   </div>
 </template>
 
@@ -42,7 +14,7 @@
 import AMapLoader from "@amap/amap-jsapi-loader";
 import HouseListJson from "../../db/data.json";
 import { AMapDeveloperKey } from "@/config/index";
-import { ref, watch } from "vue";
+import { ref } from "vue";
 
 // data
 let map = null; // 地图母版
@@ -68,18 +40,10 @@ const priceDotArr = [
 ];
 const priceClassArr = ["low", "normal", "high"];
 const amapKey = ref();
-const curAmapKey = ref();
-const dialogVisible = ref(false);
+const isLoading = ref(true);
 const cityName = ref("深圳");
 const houseList = ref([]);
 const screenHouseList = ref([]);
-
-// watch
-watch(amapKey, (newValue) => {
-  if (!newValue) {
-    dialogVisible.value = true;
-  }
-});
 
 // methods
 const getCityLngLat = (cityId) => {
@@ -104,6 +68,9 @@ const getCityLngLat = (cityId) => {
             zoom: 10, //初始化地图层级
             center: location, //初始化地图中心点
           }); // 展示地图 map
+          map.on("complete", () => {
+            isLoading.value = false;
+          });
 
           setMassMarks(); // 设置海量点标记 marker
           setMapListener(); // 监听地图 缩放/移动 事件
@@ -143,7 +110,7 @@ const setMassMarks = () => {
   }));
   massMarks = new AMap.MassMarks(markerList, {
     zIndex: 500, // 海量点图层叠加的顺序
-    zooms: [3, 14], // 在指定地图缩放级别范围内展示海量点图层
+    zooms: [3, 15], // 在指定地图缩放级别范围内展示海量点图层
     style: styleObjectArr, // 设置样式数组
   });
   massMarks.setMap(map);
@@ -152,14 +119,14 @@ const setMapListener = () => {
   map.on("zoomend", () => {
     // 监听地图缩放结束后的等级
     zoom = map.getZoom();
-    if (zoom >= 14) {
+    if (zoom >= 15) {
       executeConditionRender();
     }
   });
   map.on("moveend", () => {
     // 监听地图中心点的位置变化
     center = map.getCenter();
-    if (zoom >= 14) {
+    if (zoom >= 15) {
       executeConditionRender();
     }
   });
@@ -197,7 +164,7 @@ const executeConditionRender = () => {
 };
 const setLabelsLayer = () => {
   layer = new AMap.LabelsLayer({
-    zooms: [14, 20],
+    zooms: [15, 20],
     allowCollision: true, // 让标注避让用户的标注
   });
   markers = [];
@@ -211,14 +178,14 @@ const setLabelsLayer = () => {
         anchor: "center",
         image: priceDotArr[item.level - 1],
       },
-      zooms: [14, 20],
+      zooms: [15, 20],
       position: item.location.split(","),
     });
     markers.push(labelMarker);
 
     // 气泡文案部分 ⬇️
     const normalMarker = new AMap.Marker({
-      zooms: [14, 20],
+      zooms: [15, 20],
       offset: new AMap.Pixel(0, -15),
       extData: item,
     });
@@ -246,7 +213,7 @@ const setNormalMarkerSelected = (selectedId) => {
 
     // 气泡文案部分 ⬇️
     const normalMarker = new AMap.Marker({
-      zooms: [14, 20],
+      zooms: [15, 20],
       offset: new AMap.Pixel(0, -15),
       extData: item,
     });
@@ -263,16 +230,6 @@ const setNormalMarkerSelected = (selectedId) => {
     selectedLabel.push(normalMarker);
   });
   map.add(selectedLabel);
-};
-const updateAmapKey = () => {
-  if (curAmapKey.value) {
-    amapKey.value = curAmapKey.value;
-    getCityLngLat(197);
-  } else {
-    setTimeout(() => {
-      dialogVisible.value = true;
-    });
-  }
 };
 
 // created
@@ -291,6 +248,17 @@ if (amapKey.value) {
   #map {
     width: 100%;
     height: 100%;
+  }
+  .loading-wrapper {
+    background: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>
