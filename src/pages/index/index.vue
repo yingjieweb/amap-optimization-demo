@@ -117,15 +117,14 @@ const setMassMarks = () => {
 };
 const setMapListener = () => {
   map.on("zoomend", () => {
-    // 监听地图缩放结束后的等级
+    // 监听地图缩放事件 -> 执行条件渲染
     zoom = map.getZoom();
     if (zoom >= 15) {
       executeConditionRender();
     }
   });
   map.on("moveend", () => {
-    // 监听地图中心点的位置变化
-    center = map.getCenter();
+    // 监听地图移动事件 -> 执行条件渲染
     if (zoom >= 15) {
       executeConditionRender();
     }
