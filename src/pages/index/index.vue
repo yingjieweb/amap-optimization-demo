@@ -42,8 +42,8 @@ const priceClassArr = ["low", "normal", "high"];
 const amapKey = ref();
 const isLoading = ref(true);
 const cityName = ref("深圳");
-const houseList = ref([]);
-const screenHouseList = ref([]);
+let houseList = [];
+let screenHouseList = [];
 
 // methods
 const getCityLngLat = (cityId) => {
@@ -102,7 +102,7 @@ const setMassMarks = () => {
     normalIconStyle,
     highPriceIconStyle,
   ];
-  const markerList = houseList.value.map((item) => ({
+  const markerList = houseList.map((item) => ({
     lnglat: item.location.split(","),
     name: item.projName,
     id: item.id,
@@ -149,7 +149,7 @@ const executeConditionRender = () => {
     screenCoordinateRange.southWest.lat,
   ];
 
-  screenHouseList.value = houseList.value.filter((item) => {
+  screenHouseList = houseList.filter((item) => {
     return AMap.GeometryUtil.isPointInRing(item.location.split(","), [
       northEast,
       southEast,
@@ -168,7 +168,7 @@ const setLabelsLayer = () => {
   });
   markers = [];
   labels = [];
-  screenHouseList.value.map((item) => {
+  screenHouseList.map((item) => {
     // 圆点图标识部分 ⬇️
     const labelMarker = new AMap.LabelMarker({
       icon: {
@@ -207,7 +207,7 @@ const setLabelsLayer = () => {
 const setNormalMarkerSelected = (selectedId) => {
   map.remove(selectedLabel); // 删除原来的 selectedLabel 标注
   selectedLabel = [];
-  screenHouseList.value.map((item) => {
+  screenHouseList.map((item) => {
     if (item.id !== selectedId) return;
 
     // 气泡文案部分 ⬇️
@@ -233,7 +233,7 @@ const setNormalMarkerSelected = (selectedId) => {
 
 // created
 amapKey.value = AMapDeveloperKey;
-houseList.value = HouseListJson;
+houseList = HouseListJson;
 if (amapKey.value) {
   getCityLngLat(197);
 }
