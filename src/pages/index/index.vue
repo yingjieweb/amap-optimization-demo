@@ -121,6 +121,9 @@ const setMapListener = () => {
     zoom = map.getZoom();
     if (zoom >= 15) {
       executeConditionRender();
+    } else {
+      map.removeLayer(layer); // 删除原来气泡层（包含圆点标记）
+      map.remove(labels); // 删除原来气泡层的海量标注
     }
   });
   map.on("moveend", () => {
