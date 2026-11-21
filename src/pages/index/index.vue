@@ -139,7 +139,7 @@ const executeConditionRender = () => {
     screenCoordinateRange.northEast.lng,
     screenCoordinateRange.northEast.lat,
   ];
-  let southEast = [
+  let northWest = [
     screenCoordinateRange.southWest.lng,
     screenCoordinateRange.northEast.lat,
   ];
@@ -147,7 +147,7 @@ const executeConditionRender = () => {
     screenCoordinateRange.southWest.lng,
     screenCoordinateRange.southWest.lat,
   ];
-  let northWest = [
+  let southEast = [
     screenCoordinateRange.northEast.lng,
     screenCoordinateRange.southWest.lat,
   ];
@@ -155,10 +155,10 @@ const executeConditionRender = () => {
   screenHouseList = houseList.filter((item) => {
     return AMap.GeometryUtil.isPointInRing(item.location.split(","), [
       northEast,
-      southEast,
-      southWest,
       northWest,
-    ]);
+      southWest,
+      southEast,
+    ]); // 按 东北 -> 西北 -> 西南 -> 东南 的顺序组成视口矩形
   });
   map.removeLayer(layer); // 删除原来气泡层（包含圆点标记）
   map.remove(labels); // 删除原来气泡层的海量标注
