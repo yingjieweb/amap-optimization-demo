@@ -134,31 +134,10 @@ const setMapListener = () => {
   });
 };
 const executeConditionRender = () => {
-  let screenCoordinateRange = map.getBounds();
-  let northEast = [
-    screenCoordinateRange.northEast.lng,
-    screenCoordinateRange.northEast.lat,
-  ];
-  let northWest = [
-    screenCoordinateRange.southWest.lng,
-    screenCoordinateRange.northEast.lat,
-  ];
-  let southWest = [
-    screenCoordinateRange.southWest.lng,
-    screenCoordinateRange.southWest.lat,
-  ];
-  let southEast = [
-    screenCoordinateRange.northEast.lng,
-    screenCoordinateRange.southWest.lat,
-  ];
+  let screenCoordinateRange = map.getBounds(); // 当前视口的经纬度范围
 
   screenHouseList = houseList.filter((item) => {
-    return AMap.GeometryUtil.isPointInRing(item.location.split(","), [
-      northEast,
-      northWest,
-      southWest,
-      southEast,
-    ]); // 按 东北 -> 西北 -> 西南 -> 东南 的顺序组成视口矩形
+    return screenCoordinateRange.contains(item.location.split(",")); // 判断坐标是否在视口内
   });
   map.removeLayer(layer); // 删除原来气泡层（包含圆点标记）
   map.remove(labels); // 删除原来气泡层的海量标注
