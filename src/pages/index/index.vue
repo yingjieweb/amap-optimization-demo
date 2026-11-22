@@ -26,6 +26,7 @@ let layer = null; // 气泡层
 let markers = null; // 气泡层圆点标记
 let labels = []; // 气泡层海量标注
 let selectedLabel = []; // 气泡层选中态到文本标注
+let renderTimer = null; // 地图变化后的渲染定时器（防抖）
 const priceIconMap = {
   low: "https://t1.focus-img.cn/applet/2022-04-25/a7830c321d0842dea1ce772f622fce02.png",
   normal:
@@ -116,22 +117,21 @@ const setMassMarks = () => {
   massMarks.setMap(map);
 };
 const setMapListener = () => {
-  map.on("zoomend", () => {
-    // 监听地图缩放事件 -> 执行条件渲染
-    zoom = map.getZoom();
+  map.on("zoomend", onMapChange); // 监听地图缩放事件
+  map.on("moveend", onMapChange); // 监听地图移动事件
+};
+const onMapChange = () => {
+  // 缩放时 moveend 和 zoomend 会先后触发，防抖合并为一次渲染
+  clearTimeout(renderTimer); // 取消上一次还没执行的渲染
+  renderTimer = setTimeout(() => {
+    zoom = map.getZoom(); // 读取最新的缩放等级
     if (zoom >= 15) {
       executeConditionRender();
     } else {
       map.removeLayer(layer); // 删除原来气泡层（包含圆点标记）
       map.remove(labels); // 删除原来气泡层的海量标注
     }
-  });
-  map.on("moveend", () => {
-    // 监听地图移动事件 -> 执行条件渲染
-    if (zoom >= 15) {
-      executeConditionRender();
-    }
-  });
+  }, 100);
 };
 const executeConditionRender = () => {
   let screenCoordinateRange = map.getBounds(); // 当前视口的经纬度范围
